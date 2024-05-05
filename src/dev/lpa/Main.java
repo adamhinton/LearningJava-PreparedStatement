@@ -8,6 +8,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class Main {
+
+    private static String ARTIST_INSERT =
+            "INSERT INTO music.artists (artist_name) VALUES (?)";
+    private static String ALBUM_INSERT =
+            "INSERT INTO music.albums (artist_id, album_name) VALUES (?, ?)";
+
+    private static String SONG_INSERT =
+            "INSERT INTO music.songs (album_id, track_number, song_title)VALUES(?, ?, ?)";
+
     public static void main(String[] args) {
 
         var dataSource = new MysqlDataSource();
@@ -21,10 +30,10 @@ public class Main {
             throw new RuntimeException(e);
         }
 
-        try(Connection connection = dataSource.getConnection(
+        try (Connection connection = dataSource.getConnection(
                 System.getenv("MYSQL_USER"),
                 System.getenv("MYSQL_PASS")
-        )){
+        )) {
             String sql = "SELECT * FROM music.albumview where artist_name = ?";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, "Elf");
@@ -62,5 +71,18 @@ public class Main {
         return foundData;
     }
 
+    private static int addArtist(PreparedStatement ps, Connection conn, String artistName) throws SQLException {
+        int artistId = -1;
+        ps.setString(1, artistName);
+        int insertedCount = ps.executeUpdate();
+        if (insertedCount > 0){
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                artistId = generatedKeys.getInt(1);
+                System.out.println("Auto-incremented ID: " + artistId);
+            }
+        }
+        return artistId;
+    }
 
 }
