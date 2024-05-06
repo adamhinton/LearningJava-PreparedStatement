@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -102,21 +103,13 @@ public class Main {
     }
 
 
-    private static int addSong(PreparedStatement ps,Connection conn, int albumId, int trackNo, String songTitle) throws SQLException {
-        int songId = -1;
+    private static void addSong(PreparedStatement ps,Connection conn, int albumId, int trackNo, String songTitle) throws SQLException {
         ps.setInt(1, albumId);
         ps.setInt(2, trackNo);
         ps.setString(3, songTitle);
-        int insertedCount = ps.executeUpdate();
-        if (insertedCount > 0){
-            ResultSet generatedKeys = ps.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                songId = generatedKeys.getInt(1);
-                System.out.println("Auto-incremented ID: " + songId);
-            }
+        ps.addBatch();
+
         }
-        return songId;
-    }
 
 
 
@@ -154,6 +147,11 @@ public class Main {
 
                 addSong(psSong, conn, albumId, Integer.parseInt(columns[2]), columns[3]);
             }
+
+            int[] inserts = psSong.executeBatch();
+            int totalInserts = Arrays.stream(inserts).sum();
+            System.out.printf("%d records inserted\n", inserts.length);
+
             conn.commit();
             conn.setAutoCommit(true);
             System.out.println("All records inserted");
