@@ -38,7 +38,7 @@ public class Main {
             addDataFromCSVFile(connection);
             String sql = "SELECT * FROM music.albumview where artist_name = ?";
             PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, "Elf");
+            ps.setString(1, "Bob Dylan");
             ResultSet resultSet = ps.executeQuery();
             printRecords(resultSet);
 
@@ -156,6 +156,7 @@ public class Main {
             }
             conn.commit();
             conn.setAutoCommit(true);
+            System.out.println("All records inserted");
 
         }
         catch (SQLException e){
