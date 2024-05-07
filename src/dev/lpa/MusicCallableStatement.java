@@ -51,11 +51,11 @@ public class MusicCallableStatement {
         dataSource.setDatabaseName("music");
 
 
-        try (Connection connection = dataSource.getConnection(
+        try (Connection connection = dataSource .getConnection(
                 System.getenv("MYSQL_USER"),
                 System.getenv("MYSQL_PASS")
         )) {
-            CallableStatement cs = (CallableStatement) connection.prepareCall("CALL music.addAlbumReturnCounts(?,?,?," +
+            CallableStatement cs = (CallableStatement) connection.prepareCall("CALL music.addAlbumInOutCounts(?,?,?," +
                     "?" +
                     ")");
 
@@ -65,7 +65,10 @@ public class MusicCallableStatement {
                         cs.setString(1, artist);
                         cs.setString(2, album);
                         cs.setString(3, songs);
+                        cs.setInt(4, 10);
+                        cs.registerOutParameter(4, java.sql.Types.INTEGER);
                         cs.execute();
+                        System.out.printf("%d songs were added fro %s%n", cs.getInt(4), album);
                     }
                     catch (SQLException e){
                         System.err.println(e.getErrorCode() + " " + e.getMessage());
