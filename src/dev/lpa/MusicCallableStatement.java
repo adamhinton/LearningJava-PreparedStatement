@@ -1,5 +1,6 @@
 package dev.lpa;
 
+import com.mysql.cj.jdbc.CallableStatement;
 import com.mysql.cj.jdbc.MysqlDataSource;
 
 import java.io.IOException;
@@ -54,6 +55,24 @@ public class MusicCallableStatement {
                 System.getenv("MYSQL_USER"),
                 System.getenv("MYSQL_PASS")
         )) {
+            CallableStatement cs = (CallableStatement) connection.prepareCall("CALL music.addAlbumReturnCounts(?,?,?," +
+                    "?" +
+                    ")");
+
+            albums.forEach((artist, albumMap) -> {
+                albumMap.forEach((album, songs) -> {
+                    try{
+                        cs.setString(1, artist);
+                        cs.setString(2, album);
+                        cs.setString(3, songs);
+                        cs.execute();
+                    }
+                    catch (SQLException e){
+                        System.err.println(e.getErrorCode() + " " + e.getMessage());
+                    }
+                });
+            });
+
             String sql = "SELECT * FROM music.albumview WHERE artist_name = ?";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, "Bob Dylan");
