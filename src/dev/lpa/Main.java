@@ -51,7 +51,7 @@ public class Main {
     }
 
 
-    private static boolean printRecords(ResultSet resultSet) throws SQLException {
+    public static boolean printRecords(ResultSet resultSet) throws SQLException {
 
         boolean foundData = false;
         var meta = resultSet.getMetaData();
