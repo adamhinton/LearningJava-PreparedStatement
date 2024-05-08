@@ -39,7 +39,7 @@ public class MusicCallableStatement {
         }
 
         albums.forEach((artist, artistAlbums) -> {
-            artistAlbums.forEach((key, value) ->{
+            artistAlbums.forEach((key, value) -> {
                 System.out.println(key + " : " + value);
             });
         });
@@ -51,11 +51,12 @@ public class MusicCallableStatement {
         dataSource.setDatabaseName("music");
 
 
-        try (Connection connection = dataSource .getConnection(
+        try (Connection connection = dataSource.getConnection(
                 System.getenv("MYSQL_USER"),
                 System.getenv("MYSQL_PASS")
         )) {
-//            CallableStatement cs = (CallableStatement) connection.prepareCall("CALL music.addAlbumInOutCounts(?,?,?," +
+//            CallableStatement cs = (CallableStatement) connection.prepareCall("CALL music.addAlbumInOutCounts(?,?,
+//            ?," +
 //                    "?" +
 //                    ")");
 //
@@ -76,12 +77,29 @@ public class MusicCallableStatement {
 //                });
 //            });
 //
-//            String sql = "SELECT * FROM music.albumview WHERE artist_name = ?";
-//            PreparedStatement ps = connection.prepareStatement(sql);
-//            ps.setString(1, "Bob Dylan");
-//            ResultSet resultSet = ps.executeQuery();
-//            printRecords(resultSet);
+            String sql = "SELECT * FROM music.albumview WHERE artist_name = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, "Bob Dylan");
+            ResultSet resultSet = ps.executeQuery();
+            printRecords(resultSet);
 
+            CallableStatement csf = (CallableStatement) connection.prepareCall(
+                    "{ ? = CALL music.calcAlbumLength(?) }");
+            csf.registerOutParameter(1, java.sql.Types.DOUBLE);
+
+            albums.forEach((artist, albumMap) -> {
+               albumMap.keySet().forEach(albumName ->{
+                   try{
+                       csf.setString(2, albumName);
+                       csf.execute();
+                       double result = csf.getDouble(1);
+                       System.out.printf("Length of %s is %.1f%n", albumName, result);
+                   }
+                   catch (SQLException e){
+                       throw new RuntimeException(e);
+                   }
+               });
+            });
 
         } catch (SQLException e) {
             e.printStackTrace();
